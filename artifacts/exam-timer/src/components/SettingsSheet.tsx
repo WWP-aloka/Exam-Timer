@@ -24,6 +24,7 @@ import {
 import { ExamSettings, ChimeSound } from '@/hooks/use-exam-timer';
 import { formatTime } from '@/lib/format-time';
 import { useAudio } from '@/hooks/use-audio';
+import { SOUND_LIBRARY } from '@/lib/sound-library';
 
 interface SettingsSheetProps {
   settings: ExamSettings;
@@ -36,11 +37,7 @@ export function SettingsSheet({ settings, updateSettings, onReset, trigger }: Se
   const { theme, setTheme } = useTheme();
   const { playSound } = useAudio();
 
-  const chimeOptions: { value: ChimeSound; label: string }[] = [
-    { value: 'chime', label: 'Soft Chime (880 Hz)' },
-    { value: 'highBell', label: 'High Bell (10 kHz)' },
-    { value: 'doubleBell', label: 'Double Bell' },
-  ];
+  const chimeOptions = SOUND_LIBRARY.map((s) => ({ value: s.id, label: s.label }));
 
   const handleTimeChange = (val: number) => {
     updateSettings({ timePerQuestion: val });

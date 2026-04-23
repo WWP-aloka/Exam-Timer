@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAudio } from './use-audio';
 
-export type ChimeSound = 'chime' | 'highBell' | 'doubleBell';
+import type { SoundId } from '@/lib/sound-library';
+
+export type ChimeSound = SoundId;
 
 export interface ExamSettings {
   perQuestionMode: boolean;
