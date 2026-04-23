@@ -1,0 +1,103 @@
+Create a modern, responsive web/mobile exam timer application with the following features and behavior.
+
+APP TITLE:
+EXAM TIMER - UoM
+
+CORE FUNCTIONALITY:
+
+1. PER-QUESTION TIMER MODE:
+- Include a toggle in Settings to enable/disable "Per-Question Timer Mode".
+- When enabled:
+  - The timer represents time allocated for ONE question only.
+  - When time reaches zero:
+    - Play a warning chime sound.
+    - Automatically move to the next question.
+    - Reset the timer for the next question.
+- For the FINAL question:
+  - Play a DOUBLE bell sound when time ends.
+
+2. TIME SETTINGS:
+- Allow user to set "Time per Question":
+  - Using a slider and manual input.
+  - Example values: 30 sec, 1 min, 2 min, etc.
+
+3. AUTOMATIC NUMBERING SYSTEM:
+- Automatically generate question numbers based on "Total Questions".
+- Default = 50 questions.
+- Header must display dynamically:
+  - "Question X of Y"
+
+4. QUESTION GRID (VISUAL NAVIGATOR):
+- Display a grid of all questions (e.g., 1–50).
+- Include a label:
+  - "Question Grid"
+- Show progress text above grid:
+  - Example: "12 / 50"
+
+GRID STYLES:
+- Completed questions → dimmed
+- Current question → highlighted (bold border + shadow)
+- Upcoming questions → outlined
+
+INTERACTION:
+- Clicking a question:
+  - Instantly jump to that question
+  - If Per-Question Mode ON:
+    - Reset timer for that question
+
+5. AUTOMATIC NAVIGATION:
+- Timer should restart automatically for EACH question.
+- Smooth transition between questions without user interaction.
+
+6. TOTAL TIME DISPLAY (IMPORTANT CHANGE):
+- REMOVE percentage display.
+- Instead show:
+  - Total Exam Time = (Number of Questions × Time per Question)
+  - Remaining Total Time (counts down live)
+
+7. SETTINGS PANEL:
+Include:
+- Toggle: Per-Question Timer Mode
+- Slider: Number of Questions (range 1–200)
+- Quick presets: 10, 25, 50, 100, 150, 200
+- Custom input field
+- Ensure:
+  - If total questions reduced, current question adjusts automatically within range
+
+8. NAVIGATION CONTROLS:
+- Include Previous (-) and Next (+) buttons
+- Grid acts as quick navigation
+- Both methods must stay synchronized
+
+9. URGENCY INDICATOR:
+- When remaining time for a question is ≤ 10 seconds:
+  - Show red pulsing animation
+  - Increase urgency visually
+
+10. SCREEN BEHAVIOR:
+- Prevent device sleep while app is open
+- Keep screen ALWAYS ON (use Wake Lock API or equivalent)
+
+11. UI / UX DESIGN:
+- Clean, modern UI
+- Centered main timer
+- Large readable countdown
+- Smooth animations
+- Mobile + desktop responsive
+- Soft shadows, rounded corners
+- Clear visual hierarchy
+
+12. AUDIO:
+- Warning chime at end of each question
+- DOUBLE bell sound for final question
+
+TECH STACK:
+- Use React (or React Native with Expo if mobile)
+- Use functional components and hooks
+- Maintain clean component structure
+
+OPTIONAL:
+- Add dark mode support
+- Add reset exam button
+
+Ensure the app runs smoothly without lag and is suitable for real exam environments.
