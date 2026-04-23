@@ -47,8 +47,13 @@ export function SettingsSheet({ settings, updateSettings, onReset, trigger }: Se
     updateSettings({ totalQuestions: val });
   };
 
+  const handleExtraTimeChange = (val: number) => {
+    updateSettings({ extraTime: Math.max(0, val) });
+  };
+
   const timePresets = [30, 60, 90, 120, 180, 300];
   const questionPresets = [10, 25, 50, 100, 150, 200];
+  const extraTimePresets = [0, 30, 60, 120, 300, 600];
 
   return (
     <Sheet>
@@ -199,10 +204,61 @@ export function SettingsSheet({ settings, updateSettings, onReset, trigger }: Se
             </div>
           </div>
 
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base font-semibold">Extra Time After Final Question</Label>
+                <p className="text-sm text-muted-foreground">
+                  After the last question, an extra period is added. The selected sound plays twice
+                  at the start of this period and again when it ends.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Input
+                  type="number"
+                  min={0}
+                  max={3600}
+                  value={settings.extraTime}
+                  onChange={(e) => handleExtraTimeChange(Number(e.target.value) || 0)}
+                  className="w-20 text-right"
+                />
+                <span className="text-sm text-muted-foreground">sec</span>
+              </div>
+            </div>
+            <Slider
+              min={0}
+              max={900}
+              step={10}
+              value={[settings.extraTime]}
+              onValueChange={([v]) => handleExtraTimeChange(v)}
+            />
+            <div className="flex flex-wrap gap-2">
+              {extraTimePresets.map((t) => (
+                <Button
+                  key={t}
+                  variant={settings.extraTime === t ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleExtraTimeChange(t)}
+                  className="rounded-full text-xs"
+                >
+                  {t === 0 ? 'Off' : t < 60 ? `${t}s` : `${t / 60}m`}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           <div className="pt-6 border-t">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-muted-foreground">Total Exam Time</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Question Time</span>
               <span className="font-semibold">{formatTime(settings.totalQuestions * settings.timePerQuestion)}</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Extra Time</span>
+              <span className="font-semibold">{formatTime(settings.extraTime)}</span>
+            </div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold">Total Exam Time</span>
+              <span className="font-semibold">{formatTime(settings.totalQuestions * settings.timePerQuestion + settings.extraTime)}</span>
             </div>
             <Button variant="destructive" className="w-full rounded-xl" onClick={onReset}>
               Reset Exam Session

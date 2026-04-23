@@ -12,6 +12,7 @@ interface MainTimerProps {
   totalExamTime: number;
   isPlaying: boolean;
   isFinished: boolean;
+  inExtraTime?: boolean;
   onTogglePlay: () => void;
   onReset: () => void;
   perQuestionMode: boolean;
@@ -26,6 +27,7 @@ export function MainTimer({
   totalExamTime,
   isPlaying,
   isFinished,
+  inExtraTime = false,
   onTogglePlay,
   onReset,
   perQuestionMode,
@@ -33,9 +35,13 @@ export function MainTimer({
   settings,
   updateSettings,
 }: MainTimerProps) {
-  const isUrgent = perQuestionMode && !isFinished && timeRemaining <= 10 && timeRemaining > 0;
-  
-  const totalDuration = perQuestionMode ? settings.timePerQuestion : settings.timePerQuestion * settings.totalQuestions;
+  const isUrgent = (perQuestionMode || inExtraTime) && !isFinished && timeRemaining <= 10 && timeRemaining > 0;
+
+  const totalDuration = inExtraTime
+    ? settings.extraTime
+    : perQuestionMode
+    ? settings.timePerQuestion
+    : settings.timePerQuestion * settings.totalQuestions;
   const progress = isFinished ? 0 : Math.max(0, timeRemaining / totalDuration);
   
   const circumference = 2 * Math.PI * 140; // r=140
@@ -43,6 +49,7 @@ export function MainTimer({
 
   let statusLabel = "READY";
   if (isFinished) statusLabel = "TIME UP";
+  else if (inExtraTime) statusLabel = isPlaying ? "EXTRA TIME" : "EXTRA TIME PAUSED";
   else if (isPlaying) statusLabel = isLastQuestion ? "FINAL" : "RUNNING";
   else if (timeRemaining < totalDuration) statusLabel = "PAUSED";
 

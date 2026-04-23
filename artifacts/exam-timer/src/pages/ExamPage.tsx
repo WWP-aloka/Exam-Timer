@@ -14,6 +14,7 @@ export function ExamPage() {
     completedQuestions,
     isPlaying,
     isFinished,
+    inExtraTime,
     timeRemaining,
     resetExam,
     advanceQuestion,
@@ -22,10 +23,12 @@ export function ExamPage() {
     togglePlay,
   } = useExamTimer();
 
-  const totalTime = settings.totalQuestions * settings.timePerQuestion;
-  const remainingTotalTime = settings.perQuestionMode
-    ? timeRemaining + (settings.totalQuestions - currentQuestion) * settings.timePerQuestion
-    : timeRemaining;
+  const totalTime = settings.totalQuestions * settings.timePerQuestion + settings.extraTime;
+  const remainingTotalTime = inExtraTime
+    ? timeRemaining
+    : settings.perQuestionMode
+    ? timeRemaining + (settings.totalQuestions - currentQuestion) * settings.timePerQuestion + settings.extraTime
+    : timeRemaining + settings.extraTime;
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background text-foreground transition-colors duration-300">
@@ -45,6 +48,7 @@ export function ExamPage() {
             totalExamTime={totalTime}
             isPlaying={isPlaying}
             isFinished={isFinished}
+            inExtraTime={inExtraTime}
             onTogglePlay={togglePlay}
             onReset={resetExam}
             perQuestionMode={settings.perQuestionMode}

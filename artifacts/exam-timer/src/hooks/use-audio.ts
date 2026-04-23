@@ -107,5 +107,13 @@ export function useAudio() {
     };
   }, [initAudio]);
 
-  return { playChime, playHighBell, playDoubleBell, playSound, stopFile, initAudio };
+  const playSoundTwice = useCallback(
+    (sound: SoundId, gapMs = 800) => {
+      playSound(sound);
+      window.setTimeout(() => playSound(sound), gapMs);
+    },
+    [playSound],
+  );
+
+  return { playChime, playHighBell, playDoubleBell, playSound, playSoundTwice, stopFile, initAudio };
 }

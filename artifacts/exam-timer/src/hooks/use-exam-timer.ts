@@ -10,25 +10,28 @@ export interface ExamSettings {
   timePerQuestion: number;
   totalQuestions: number;
   chimeSound: ChimeSound;
+  extraTime: number;
 }
 
 export function useExamTimer() {
   // Load settings from local storage
   const [settings, setSettings] = useState<ExamSettings>(() => {
-    const saved = localStorage.getItem('examSettings');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return {
+    const defaults: ExamSettings = {
       perQuestionMode: true,
       timePerQuestion: 60,
       totalQuestions: 50,
       chimeSound: 'chime' as ChimeSound,
+      extraTime: 60,
     };
+    const saved = localStorage.getItem('examSettings');
+    if (saved) {
+      try {
+        return { ...defaults, ...JSON.parse(saved) };
+      } catch (e) {
+        // ignore
+      }
+    }
+    return defaults;
   });
 
   useEffect(() => {
@@ -46,21 +49,24 @@ export function useExamTimer() {
   const [completedQuestions, setCompletedQuestions] = useState<Set<number>>(new Set());
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [inExtraTime, setInExtraTime] = useState(false);
 
   // Time state
   // In per-question mode: remaining time for current question
   // In total mode: total remaining time
+  // During extra-time phase: remaining extra-time seconds
   const [timeRemaining, setTimeRemaining] = useState(
     settings.perQuestionMode ? settings.timePerQuestion : settings.timePerQuestion * settings.totalQuestions
   );
 
-  const { playSound, playDoubleBell } = useAudio();
+  const { playSound, playSoundTwice } = useAudio();
   const timerRef = useRef<number | null>(null);
   const lastTickRef = useRef<number | null>(null);
 
   const resetExam = useCallback(() => {
     setIsPlaying(false);
     setIsFinished(false);
+    setInExtraTime(false);
     setCurrentQuestion(1);
     setCompletedQuestions(new Set());
     setTimeRemaining(
@@ -111,35 +117,75 @@ export function useExamTimer() {
     }
   }, [settings.totalQuestions, settings.perQuestionMode, settings.timePerQuestion]);
 
+  const finishExam = useCallback(() => {
+    playSoundTwice(settings.chimeSound);
+    setIsFinished(true);
+    setIsPlaying(false);
+    setInExtraTime(false);
+  }, [playSoundTwice, settings.chimeSound]);
+
+  const enterExtraTime = useCallback(() => {
+    // Mark final question complete and signal end-of-exam with double bell
+    setCompletedQuestions((prev) => {
+      const next = new Set(prev);
+      next.add(settings.totalQuestions);
+      return next;
+    });
+    playSoundTwice(settings.chimeSound);
+    if (settings.extraTime > 0) {
+      setInExtraTime(true);
+      setTimeRemaining(settings.extraTime);
+    } else {
+      setIsFinished(true);
+      setIsPlaying(false);
+    }
+  }, [playSoundTwice, settings.chimeSound, settings.extraTime, settings.totalQuestions]);
+
   const tick = useCallback(() => {
     if (!isPlaying || isFinished) return;
 
     setTimeRemaining((prev) => {
       if (prev <= 1) {
         // Time's up
+        if (inExtraTime) {
+          // Extra-time period finished
+          finishExam();
+          return 0;
+        }
+
         if (settings.perQuestionMode) {
           if (currentQuestion === settings.totalQuestions) {
-            playDoubleBell();
-            setIsFinished(true);
-            setIsPlaying(false);
-            return 0;
+            // Last question ended — double bell, then optional extra time
+            enterExtraTime();
+            return settings.extraTime > 0 ? settings.extraTime : 0;
           } else {
             playSound(settings.chimeSound);
-            // Need to use timeout to avoid React complaining about setting state during render sometimes if this was synchronous, though here it's in a timeout anyway.
             setTimeout(() => advanceQuestion(false), 0);
             return settings.timePerQuestion; // Reset for next
           }
         } else {
-          // Total mode ended
-          playDoubleBell();
-          setIsFinished(true);
-          setIsPlaying(false);
-          return 0;
+          // Total mode ended — double bell, then optional extra time
+          enterExtraTime();
+          return settings.extraTime > 0 ? settings.extraTime : 0;
         }
       }
       return prev - 1;
     });
-  }, [isPlaying, isFinished, settings.perQuestionMode, settings.timePerQuestion, settings.chimeSound, currentQuestion, settings.totalQuestions, playDoubleBell, playSound, advanceQuestion]);
+  }, [
+    isPlaying,
+    isFinished,
+    inExtraTime,
+    settings.perQuestionMode,
+    settings.timePerQuestion,
+    settings.extraTime,
+    settings.chimeSound,
+    currentQuestion,
+    settings.totalQuestions,
+    playSound,
+    advanceQuestion,
+    enterExtraTime,
+    finishExam,
+  ]);
 
   useEffect(() => {
     if (isPlaying && !isFinished) {
@@ -162,6 +208,7 @@ export function useExamTimer() {
     completedQuestions,
     isPlaying,
     isFinished,
+    inExtraTime,
     timeRemaining,
     resetExam,
     advanceQuestion,
