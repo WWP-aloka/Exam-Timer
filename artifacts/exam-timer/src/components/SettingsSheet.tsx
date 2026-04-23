@@ -1,4 +1,4 @@
-import { Settings2, Moon, Sun } from 'lucide-react';
+import { Settings2, Moon, Sun, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +14,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { ExamSettings } from '@/hooks/use-exam-timer';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ExamSettings, ChimeSound } from '@/hooks/use-exam-timer';
 import { formatTime } from '@/lib/format-time';
+import { useAudio } from '@/hooks/use-audio';
 
 interface SettingsSheetProps {
   settings: ExamSettings;
@@ -26,6 +34,13 @@ interface SettingsSheetProps {
 
 export function SettingsSheet({ settings, updateSettings, onReset, trigger }: SettingsSheetProps) {
   const { theme, setTheme } = useTheme();
+  const { playSound } = useAudio();
+
+  const chimeOptions: { value: ChimeSound; label: string }[] = [
+    { value: 'chime', label: 'Soft Chime (880 Hz)' },
+    { value: 'highBell', label: 'High Bell (10 kHz)' },
+    { value: 'doubleBell', label: 'Double Bell' },
+  ];
 
   const handleTimeChange = (val: number) => {
     updateSettings({ timePerQuestion: val });
@@ -70,6 +85,39 @@ export function SettingsSheet({ settings, updateSettings, onReset, trigger }: Se
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>
             </Button>
+          </div>
+
+          <div className="p-4 bg-muted/50 rounded-2xl border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base font-semibold">End-of-Question Sound</Label>
+                <p className="text-sm text-muted-foreground">Plays when the per-question timer ends.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full shrink-0"
+                onClick={() => playSound(settings.chimeSound)}
+                aria-label="Preview sound"
+              >
+                <Volume2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <Select
+              value={settings.chimeSound}
+              onValueChange={(v) => updateSettings({ chimeSound: v as ChimeSound })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {chimeOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl border">

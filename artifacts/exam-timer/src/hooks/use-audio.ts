@@ -37,11 +37,24 @@ export function useAudio() {
     playTone(880, 'sine', 0.5); // A5
   }, [initAudio, playTone]);
 
+  const playHighBell = useCallback(() => {
+    initAudio();
+    // High-frequency bell around 10kHz with a short bright envelope
+    playTone(10000, 'sine', 0.35, 0);
+    playTone(10000, 'sine', 0.35, 0.18);
+  }, [initAudio, playTone]);
+
   const playDoubleBell = useCallback(() => {
     initAudio();
     playTone(660, 'sine', 0.6, 0); // E5
     playTone(990, 'sine', 0.8, 0.2); // B5
   }, [initAudio, playTone]);
+
+  const playSound = useCallback((sound: 'chime' | 'highBell' | 'doubleBell') => {
+    if (sound === 'highBell') playHighBell();
+    else if (sound === 'doubleBell') playDoubleBell();
+    else playChime();
+  }, [playChime, playHighBell, playDoubleBell]);
 
   useEffect(() => {
     const handleInteraction = () => {
@@ -57,5 +70,5 @@ export function useAudio() {
     };
   }, [initAudio]);
 
-  return { playChime, playDoubleBell, initAudio };
+  return { playChime, playHighBell, playDoubleBell, playSound, initAudio };
 }

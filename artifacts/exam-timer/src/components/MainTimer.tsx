@@ -47,8 +47,8 @@ export function MainTimer({
   else if (timeRemaining < totalDuration) statusLabel = "PAUSED";
 
   return (
-    <div className="flex flex-col items-center justify-center py-6 w-full max-w-md mx-auto">
-      <div className="relative flex items-center justify-center mb-8 w-64 h-64 sm:w-80 sm:h-80">
+    <div className="flex flex-col items-center justify-center py-6 w-full max-w-xl mx-auto">
+      <div className="relative flex items-center justify-center mb-8 w-80 h-80 sm:w-[26rem] sm:h-[26rem]">
         <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 320 320">
           <circle
             cx="160"
@@ -92,7 +92,7 @@ export function MainTimer({
             transition={{ duration: 1, repeat: isUrgent ? Infinity : 0 }}
             className={cn(
               "font-mono font-bold tracking-tighter",
-              "text-5xl sm:text-6xl text-foreground",
+              "text-6xl sm:text-7xl md:text-8xl text-foreground",
               isUrgent && "text-destructive",
               isFinished && "text-muted-foreground"
             )}

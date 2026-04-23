@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAudio } from './use-audio';
 
+export type ChimeSound = 'chime' | 'highBell' | 'doubleBell';
+
 export interface ExamSettings {
   perQuestionMode: boolean;
   timePerQuestion: number;
   totalQuestions: number;
+  chimeSound: ChimeSound;
 }
 
 export function useExamTimer() {
@@ -22,6 +25,7 @@ export function useExamTimer() {
       perQuestionMode: true,
       timePerQuestion: 60,
       totalQuestions: 50,
+      chimeSound: 'chime' as ChimeSound,
     };
   });
 
@@ -48,7 +52,7 @@ export function useExamTimer() {
     settings.perQuestionMode ? settings.timePerQuestion : settings.timePerQuestion * settings.totalQuestions
   );
 
-  const { playChime, playDoubleBell } = useAudio();
+  const { playSound, playDoubleBell } = useAudio();
   const timerRef = useRef<number | null>(null);
   const lastTickRef = useRef<number | null>(null);
 
@@ -118,7 +122,7 @@ export function useExamTimer() {
             setIsPlaying(false);
             return 0;
           } else {
-            playChime();
+            playSound(settings.chimeSound);
             // Need to use timeout to avoid React complaining about setting state during render sometimes if this was synchronous, though here it's in a timeout anyway.
             setTimeout(() => advanceQuestion(false), 0);
             return settings.timePerQuestion; // Reset for next
@@ -133,7 +137,7 @@ export function useExamTimer() {
       }
       return prev - 1;
     });
-  }, [isPlaying, isFinished, settings.perQuestionMode, settings.timePerQuestion, currentQuestion, settings.totalQuestions, playDoubleBell, playChime, advanceQuestion]);
+  }, [isPlaying, isFinished, settings.perQuestionMode, settings.timePerQuestion, settings.chimeSound, currentQuestion, settings.totalQuestions, playDoubleBell, playSound, advanceQuestion]);
 
   useEffect(() => {
     if (isPlaying && !isFinished) {
