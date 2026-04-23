@@ -1,8 +1,8 @@
-import { Moon, Sun, RotateCcw } from 'lucide-react';
+import { Settings, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsSheet } from './SettingsSheet';
-import { useTheme } from 'next-themes';
 import { ExamSettings } from '@/hooks/use-exam-timer';
+import { useState, useEffect } from 'react';
 
 interface HeaderProps {
   currentQuestion: number;
@@ -13,35 +13,52 @@ interface HeaderProps {
 }
 
 export function Header({ currentQuestion, totalQuestions, settings, updateSettings, onReset }: HeaderProps) {
-  const { theme, setTheme } = useTheme();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="font-bold text-lg hidden sm:block tracking-tight text-primary">EXAM TIMER - UoM</h1>
-          <h1 className="font-bold text-lg sm:hidden tracking-tight text-primary">UoM</h1>
-          <div className="h-6 w-px bg-border hidden sm:block" />
-          <div className="font-mono text-sm font-medium bg-muted px-3 py-1 rounded-full">
-            Question {currentQuestion} of {totalQuestions}
-          </div>
-        </div>
+    <header className="w-full pt-4 pb-2 bg-transparent">
+      <div className="container mx-auto px-4 flex flex-col items-center gap-4">
+        <div className="w-full flex items-center justify-between">
+          <SettingsSheet settings={settings} updateSettings={updateSettings} onReset={onReset} trigger={
+            <Button variant="ghost" size="icon" className="rounded-full bg-card shadow-sm border text-muted-foreground hover:text-foreground">
+              <Settings className="h-5 w-5" />
+            </Button>
+          } />
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onReset} className="rounded-full" title="Reset Exam">
-            <RotateCcw className="h-5 w-5" />
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-lg sm:text-xl tracking-tight text-foreground">EXAM TIMER - UoM</h1>
+              <span className="text-xs font-semibold bg-muted text-muted-foreground px-2 py-0.5 rounded-md">
+                {totalQuestions} Qs
+              </span>
+            </div>
+          </div>
+
+          <Button variant="ghost" size="icon" className="rounded-full bg-card shadow-sm border text-muted-foreground hover:text-foreground" onClick={toggleFullscreen}>
+            {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </Button>
-          <SettingsSheet settings={settings} updateSettings={updateSettings} onReset={onReset} />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+        </div>
+        
+        <div className="flex items-center gap-2 bg-card border shadow-sm px-4 py-1.5 rounded-full text-sm font-medium">
+          <div className="h-2 w-2 rounded-full bg-secondary" />
+          <span className="text-foreground">QUESTION {currentQuestion}</span>
+          <span className="text-muted-foreground">/ {totalQuestions}</span>
         </div>
       </div>
     </header>

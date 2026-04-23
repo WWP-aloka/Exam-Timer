@@ -1,9 +1,11 @@
-import { Settings2 } from 'lucide-react';
+import { Settings2, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { useTheme } from 'next-themes';
+import { ReactNode } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -19,9 +21,12 @@ interface SettingsSheetProps {
   settings: ExamSettings;
   updateSettings: (s: Partial<ExamSettings>) => void;
   onReset: () => void;
+  trigger?: ReactNode;
 }
 
-export function SettingsSheet({ settings, updateSettings, onReset }: SettingsSheetProps) {
+export function SettingsSheet({ settings, updateSettings, onReset, trigger }: SettingsSheetProps) {
+  const { theme, setTheme } = useTheme();
+
   const handleTimeChange = (val: number) => {
     updateSettings({ timePerQuestion: val });
   };
@@ -36,10 +41,12 @@ export function SettingsSheet({ settings, updateSettings, onReset }: SettingsShe
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Settings2 className="h-5 w-5" />
-          <span className="sr-only">Settings</span>
-        </Button>
+        {trigger || (
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Settings2 className="h-5 w-5" />
+            <span className="sr-only">Settings</span>
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader className="mb-6">
@@ -48,6 +55,23 @@ export function SettingsSheet({ settings, updateSettings, onReset }: SettingsShe
         </SheetHeader>
 
         <div className="space-y-8">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl border">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Dark Mode</Label>
+              <p className="text-sm text-muted-foreground">Toggle theme.</p>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          </div>
+
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl border">
             <div className="space-y-0.5">
               <Label className="text-base font-semibold">Per-Question Mode</Label>
